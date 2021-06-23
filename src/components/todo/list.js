@@ -1,23 +1,37 @@
 import React from 'react';
+// import ListGroup from 'react-bootstrap/ListGroup';
+import Toast from 'react-bootstrap/Toast';
+import Badge from 'react-bootstrap/Badge';
 
-class TodoList extends React.Component {
+export default function TodoList(props) {
 
-  render() {
-    return (
-      <ul>
-        {this.props.list.map(item => (
-          <li
-            className={`complete-${item.complete.toString()}`}
-            key={item._id}
+  const styles = {
+    pill: {
+      cursor: "pointer",
+    },
+  };
+
+  return (
+    <>
+    {props.list.map((item) => (
+      <Toast key={item._id} onClose={() => props.handleDelete(item._id)}>
+        <Toast.Header>
+          <Badge
+            pill
+            style={styles.pill}
+            variant={item.complete ? "danger" : "success"}
+            onClick={() => props.handleComplete(item._id)}
           >
-            <span onClick={() => this.props.handleComplete(item._id)}>
-              {item.text}
-            </span>
-          </li>
-        ))}
-      </ul>
-    );
-  }
+            {!item.complete ? "Pending" : "Complete"}
+          </Badge>
+          <strong className="mr-auto">{item.assignee}</strong>
+        </Toast.Header>
+        <Toast.Body>
+          {item.text}
+              difficulty:{item.difficulty}
+        </Toast.Body>
+      </Toast>
+    ))}
+    </>
+  )
 }
-
-export default TodoList;

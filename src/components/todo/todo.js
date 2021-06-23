@@ -1,73 +1,94 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import TodoForm from './form.js';
 import TodoList from './list.js';
-
+import axios from 'axios';
 import './todo.scss';
 
-class ToDo extends React.Component {
+const todoAPI = 'https://api-js401.herokuapp.com/api/v1/todo';
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      list: [],
-    };
-  }
+export default function ToDo(props) {
 
-  addItem = (item) => {
-    item._id = Math.random();
-    item.complete = false;
-    this.setState({ list: [...this.state.list, item]});
+  const [list, setList] = useState([]);
+  document.title = `To Do List: ${list.filter(item => !item.complete).length}`;
+
+
+  
+  const getItems = async () => {
+    let request = await axios({
+      method: 'get',
+      url: todoAPI
+    })
+    setList(request.data.results)
   };
 
-  toggleComplete = id => {
+  useEffect(() => {
+    getItems();
+  }, []);
 
-    let item = this.state.list.filter(i => i._id === id)[0] || {};
+  const postItems = async (input) => {
+    let request = await axios({
+      method: 'post',
+      url: todoAPI,
+      data: input
+    })
+    getItems();
+    console.log(request);
+    return request;
+  };
 
-    if (item._id) {
-      item.complete = !item.complete;
-      let list = this.state.list.map(listItem => listItem._id === item._id ? item : listItem);
-      this.setState({list});
+  const putItems = async (id) => {
+
+    let itemToPut = list.filter(i => i._id === id)[0];
+    
+    if (itemToPut._id) {
+   
+      let request = await axios({
+        method: 'put',
+        url: `${todoAPI}/${id}`,
+        data: {complete: !itemToPut.complete},
+      })
+      getItems();
+      return request;
     }
-
-  };
-
-  componentDidMount() {
-    let list = [
-      { _id: 1, complete: false, text: 'Clean the Kitchen', difficulty: 3, assignee: 'Person A'},
-      { _id: 2, complete: false, text: 'Do the Laundry', difficulty: 2, assignee: 'Person A'},
-      { _id: 3, complete: false, text: 'Walk the Dog', difficulty: 4, assignee: 'Person B'},
-      { _id: 4, complete: true, text: 'Do Homework', difficulty: 3, assignee: 'Person C'},
-      { _id: 5, complete: false, text: 'Take a Nap', difficulty: 1, assignee: 'Person B'},
-    ];
-
-    this.setState({list});
   }
 
-  render() {
-    return (
-      <>
-        <header>
-          <h2>
-          There are {this.state.list.filter(item => !item.complete).length} Items To Complete
-          </h2>
-        </header>
+  const deleteItems = async (id) => {
+
+    let request = await axios({
+      method: 'delete',
+      url: `${todoAPI}/${id}`,
+    })
+    getItems();
+    return request;
+  }
+
+
+
+  return (
+    <>
+      <header>
+      </header>
+      <main>
+        <h2>
+          To Do List Manager ({list.filter(item => !item.complete).length})
+        </h2>
 
         <section className="todo">
 
           <div>
-            <TodoForm handleSubmit={this.addItem} />
+            <TodoForm addItem={postItems} />
           </div>
 
           <div>
             <TodoList
-              list={this.state.list}
-              handleComplete={this.toggleComplete}
+              list={list}
+              handleComplete={putItems}
+              handleDelete={deleteItems}
             />
           </div>
         </section>
-      </>
-    );
-  }
+      </main>
+    </>
+  );
 }
-
-export default ToDo;
