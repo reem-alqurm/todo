@@ -3,17 +3,33 @@ import { useState, useEffect } from 'react';
 import TodoForm from './form.js';
 import TodoList from './list.js';
 import axios from 'axios';
+import useAjax from '../../hooks/useAjax.js';
 import './todo.scss';
+import Header from '../header/header.js';
+import SettingsProvider from '../../context/Settings.js';
+// import Login from '../../components/auth/Login.js';
+import Auth from '../auth/auth';
+import AuthProvider from '../../context/AuthProvider.js';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthProvider.js';
+import useForm from '../../hooks/useForm.js';
+
 
 const todoAPI = 'https://api-js401.herokuapp.com/api/v1/todo';
+
+function If({ condition, children }) {
+  return condition ? children : null;
+}
+
 
 export default function ToDo(props) {
 
   const [list, setList] = useState([]);
   document.title = `To Do List: ${list.filter(item => !item.complete).length}`;
 
+  const [request, response] = useAjax();
+  const [data, setData] = useState();
 
-  
   const getItems = async () => {
     let request = await axios({
       method: 'get',
@@ -22,73 +38,83 @@ export default function ToDo(props) {
     setList(request.data.results)
   };
 
+
   useEffect(() => {
-    getItems();
-  }, []);
+    setData(response);
+  }, [response]);
 
-  const postItems = async (input) => {
-    let request = await axios({
-      method: 'post',
+  const postItems = (input) => {
+    let options = {
       url: todoAPI,
-      data: input
-    })
-    getItems();
-    console.log(request);
-    return request;
-  };
+      method: 'post',
+      mode: 'cors',
+      headers: { 'Context-Type': 'application/json' },
+      data: input,
+    }
+    request(options);
+  }
 
-  const putItems = async (id) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const putItems = (id) => {
 
-    let itemToPut = list.filter(i => i._id === id)[0];
-    
+    const itemToPut = list.filter(i => i._id === id)[0]
     if (itemToPut._id) {
-   
-      let request = await axios({
-        method: 'put',
+      let options = {
         url: `${todoAPI}/${id}`,
-        data: {complete: !itemToPut.complete},
-      })
-      getItems();
-      return request;
+        method: 'put',
+        mode: 'cors',
+        headers: { 'Context-Type': 'application/json' },
+        data: { complete: !itemToPut.complete }
+      }
+      request(options);
     }
   }
 
-  const deleteItems = async (id) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const deleteItems = (id) => {
 
-    let request = await axios({
-      method: 'delete',
+    let options = {
       url: `${todoAPI}/${id}`,
-    })
-    getItems();
-    return request;
+      method: 'delete',
+      mode: 'cors',
+      headers: { 'Context-Type': 'application/json' },
+    }
+    request(options);
   }
 
+  useEffect(() => {
+    getItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [putItems, deleteItems]);
 
 
   return (
     <>
-      <header>
-      </header>
-      <main>
-        <h2>
-          To Do List Manager ({list.filter(item => !item.complete).length})
-        </h2>
-
-        <section className="todo">
-
-          <div>
-            <TodoForm addItem={postItems} />
-          </div>
-
-          <div>
-            <TodoList
-              list={list}
-              handleComplete={putItems}
-              handleDelete={deleteItems}
-            />
-          </div>
-        </section>
-      </main>
+      <AuthProvider>
+        <SettingsProvider>
+          <Header />
+          <Auth capability="read">
+            {/* <p>You are authorized!!</p> */}
+          <main>
+            <h2>
+              To Do List Manager ({list.filter(item => !item.complete).length})
+            </h2>
+            <section className="todo">
+              <div>
+                <TodoForm addItem={postItems} />
+              </div>
+              <div>
+                <TodoList
+                  list={list}
+                  handleComplete={putItems}
+                  handleDelete={deleteItems}
+                  />
+              </div>
+            </section>
+          </main>
+          </Auth>
+        </SettingsProvider>
+      </AuthProvider>
     </>
   );
 }
