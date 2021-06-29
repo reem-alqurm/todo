@@ -7,6 +7,7 @@ import useForm from '../../hooks/useForm.js';
 
 export default function TodoForm({ addItem }) {
 
+  // const [listItem, setListItem] = useState(['listItem']);
   const [values, handleInputChange, handleSubmit] = useForm(addItem);
 
 
