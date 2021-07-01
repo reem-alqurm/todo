@@ -39,7 +39,6 @@ function AuthProvider(props) {
   }
 
   const login = (username, password) => {
-    // basic authentication header options
     let options = {
       url: `${API_URL}/signin`,
       method: 'POST',
