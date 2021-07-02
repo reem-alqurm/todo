@@ -4,7 +4,7 @@
 # Author: Reem Alqurm
 # Deployed site on Netlify 
 
-* [Netlify](https://60d39106f07d160a0d7e868f--vibrant-goldberg-fb4562.netlify.app/) .
+* [Netlify](https://60df4198ae1c692ee1225ca8--hopeful-carson-22a383.netlify.app/) .
 # Link to GitHub repo 
 * [repo](https://github.com/reem-alqurm/todo) .
 
