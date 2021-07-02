@@ -1,17 +1,49 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import ToDo from './components/todo/todo.js';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import useAjax from './hooks/useAjax.js';
-// import SettingsProvider from './context/Settings.js';
+import React, { useContext } from 'react';
+import ToDo from './components/todo/todo';
+import NavBar from './components/todo/navigation';
+import { If, Else, Then } from 'react-if';
+import Auth from './components/auth/auth.js';
+import SettingProvider from './components/context/setting';
+import { LoginContext } from './components/auth/setting';
 
-export default function App() {
 
+const EditLink = () => {
+	return (
+		<Auth capability="update">
+			<span>Edit</span>
+		</Auth>
+	);
+};
 
-  return (
-    <>
-      <ToDo/>
-      {/* <ToDo title={title} setTitle={setTitle}/> */}
-    </>
-  );
+const DeleteLink = () => {
+	return (
+		<Auth capability="delete">
+			<span>Delete</span>
+		</Auth>
+	);
+};
+const App = () => {
+
+	const loginContext = useContext(LoginContext);
+	return (
+		<>
+			<NavBar />
+			<EditLink />
+			<DeleteLink />
+			<If condition={loginContext.loggedIn}>
+				<Then>
+					<SettingProvider>
+						<ToDo />
+					</SettingProvider>
+				</Then>
+				<Else>
+					<div></div>
+				</Else>
+			</If>
+			
+		</>
+	);
+
 }
+
+export default App;
