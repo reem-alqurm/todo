@@ -1,33 +1,19 @@
-import React from 'react';
-import { useContext } from 'react';
-import { AuthContext } from '../../context/AuthProvider.js';
-import jwt from 'jsonwebtoken';
+import React, { useContext } from 'react';
+import { LoginContext } from './setting';
+import { If } from 'react-if';
 
-function If({ condition, children }) {
-  return condition ? children : null;
-}
-
-function Auth({ capability, children }) {
-
-  let context = useContext(AuthContext);
-  const isAuthorized = (capability) => {
-    let userData = jwt.decode(context.token);
-    if (userData) {
-      return userData.capabilities.includes(capability) ? true : false;
-    }
-    return false
-  }
-
-  return (
-    <>
-      <If condition={isAuthorized(capability)}>
-        {children}
-      </If>
-      <If condition={!isAuthorized(capability)}>
-        <h3>Not Authorized</h3>
-      </If>
-    </>
-  )
-}
+const Auth = (props) => {
+	const loginContext = useContext(LoginContext);
+	let render = false;
+	try {
+		render =
+			loginContext.loggedIn && props.capability
+				? loginContext.user.capabilities.includes(props.capability)
+				: false;
+	} catch (error) {
+		console.log('NOT AUTHORIZED', error.message);
+	}
+	return <If condition={render}>{props.children}</If>;
+};
 
 export default Auth;
